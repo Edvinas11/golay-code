@@ -32,11 +32,17 @@ private:
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
     };
     int G[12][23];
+    int encoded[23] = {0};
+
     void create_generator_matrix();
+    int bin_add(int a, int b);
+    int bin_mult(int a, int b);
 
 public:
     Golay();
     void print_generator_matrix();
+    void encode(int *message);
+    void print_encoded_message();
 };
 
 #endif
