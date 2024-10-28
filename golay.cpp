@@ -1,5 +1,8 @@
 #include "golay.h"
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -60,4 +63,45 @@ void Golay::print_encoded_message() {
         cout << encoded[i] << " ";
     }
     cout << endl;
+}
+
+double Golay::input_probability() {
+    double p;
+    cout << "Please enter error probability as a floating point number (e.g., 0.0001): ";
+
+    if (!(cin >> p)) {
+        cerr << "ERROR: Invalid input. Please enter a valid floating-point number." << endl;
+        cin.clear();
+        cin.ignore(10000, '\n');
+        return input_probability();
+    }
+
+    if (p < 0.0 || p > 1.0) {
+        cerr << "ERROR: Probability must be between 0 and 1." << endl;
+        return input_probability();
+    }
+
+    return p;
+}
+
+void Golay::print_received() {
+    for(int i = 0; i < 23; ++i) {
+        cout << received[i] << " ";
+    }
+    cout << endl;
+}
+
+void Golay::send_through_channel(double p) {
+    srand(time(0));
+
+    for (int i = 0; i < 23; ++i) {
+        double a = (double)rand() / RAND_MAX;
+
+        if (a < p) {
+            received[i] = 1 - encoded[i];
+        }
+        else {
+            received[i] = encoded[i];
+        }
+    }
 }

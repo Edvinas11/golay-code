@@ -33,6 +33,7 @@ private:
     };
     int G[12][23];
     int encoded[23] = {0};
+    int received[23];
 
     void create_generator_matrix();
     int bin_add(int a, int b);
@@ -43,6 +44,9 @@ public:
     void print_generator_matrix();
     void encode(int *message);
     void print_encoded_message();
+    void send_through_channel(double p);
+    void print_received();
+    double input_probability();
 };
 
 #endif

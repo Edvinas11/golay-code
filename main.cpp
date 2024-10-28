@@ -21,5 +21,13 @@ int main() {
     cout << "Encoded message: ";
     myGolay.print_encoded_message();
 
+    double p = myGolay.input_probability();
+
+    cout << "Sending encoded message through a channel..." << endl;
+    myGolay.send_through_channel(p);
+
+    cout << "Received message: ";
+    myGolay.print_received();
+
     return 0;
 }
