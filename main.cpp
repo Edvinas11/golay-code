@@ -8,6 +8,7 @@ int main() {
 
     // test message for encoding
     int message[12] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+    // int message[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
     cout << "Message: ";
     for (int i = 0; i < 12; ++i) {
