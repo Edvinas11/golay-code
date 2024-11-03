@@ -10,6 +10,12 @@ int main() {
     int message[12] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
     // int message[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
+    myGolay.print_generator_matrix();
+
+    cout << endl;
+    myGolay.print_parity_check_matrix();
+    cout << endl;
+
     cout << "Message: ";
     for (int i = 0; i < 12; ++i) {
         cout << message[i] << " ";
@@ -29,6 +35,9 @@ int main() {
 
     cout << "Received message: ";
     myGolay.print_received();
+
+    cout << "Trying to decode the received message..." << endl;
+    myGolay.decode();
 
     return 0;
 }
