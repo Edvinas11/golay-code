@@ -9,7 +9,6 @@ using namespace std;
 // constructor
 Golay::Golay() {
     create_generator_matrix();
-    // create_parity_check_matrix();
 }
 
 // creates a 12 x 23 matrix G = [I, B]
@@ -22,20 +21,6 @@ void Golay::create_generator_matrix() {
     for (int i = 0; i < 12; ++i) {
         for (int j = 0; j < 11; ++j) {
             G[i][j + 12] = B[i][j];
-        }
-    }
-}
-
-void Golay::create_parity_check_matrix() {
-    for (int i = 0; i < 12; ++i) {
-        for (int j = 0; j < 12; ++j) {
-            H[i][j] = I[i][j];
-        }
-    }
-
-    for (int i = 0; i < 12; ++i) {
-        for (int j = 0; j < 12; ++j) {
-            H[i + 12][j] = B[i][j];
         }
     }
 }
