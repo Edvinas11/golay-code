@@ -79,7 +79,6 @@ public:
     void encode(int *message);
     void print_encoded_message();
     void send_through_channel(double p);
-    void print_received();
     void decode();
     void get_message_input(int *message);
     double get_input_probability();

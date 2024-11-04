@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -70,7 +71,7 @@ void Golay::encode(int *message) {
 
 void Golay::print_encoded_message() {
     for(int i = 0; i < 23; ++i) {
-        cout << encoded[i] << " ";
+        cout << encoded[i];
     }
     cout << endl;
 }
@@ -94,25 +95,40 @@ double Golay::get_input_probability() {
     return p;
 }
 
-void Golay::print_received() {
-    for(int i = 0; i < 23; ++i) {
-        cout << received[i] << " ";
-    }
-    cout << endl;
-}
-
 void Golay::send_through_channel(double p) {
     srand(time(0));
+    int error_count = 0;
+    vector<int> error_positions;
 
     for (int i = 0; i < 23; ++i) {
         double a = (double)rand() / RAND_MAX;
 
         if (a < p) {
             received[i] = 1 - encoded[i];
+            error_positions.push_back(i);
+            error_count++;
         }
         else {
             received[i] = encoded[i];
         }
+    }
+
+    cout << "Received vector after passing through the channel: ";
+    for (int i = 0; i < 23; ++i) {
+        cout << received[i];
+    }
+    cout << endl;
+
+    cout << "Number of errors: " << error_count << endl;
+    if (error_count > 0) {
+        cout << "Error positions: ";
+        for (int pos : error_positions) {
+            cout << pos << " ";
+        }
+        cout << endl;
+    }
+    else {
+        cout << "No errors." << endl;
     }
 }
 
