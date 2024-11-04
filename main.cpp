@@ -7,16 +7,7 @@ int main() {
     Golay myGolay;
 
     // test message for encoding
-    // int message[12] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
-    // int message[12] = {1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1};
-    // int message[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    int message[12] = {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1};
-
-    myGolay.print_generator_matrix();
-
-    cout << endl;
-    myGolay.print_parity_check_matrix();
-    cout << endl;
+    int message[12] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
 
     cout << "Message: ";
     for (int i = 0; i < 12; ++i) {
@@ -30,10 +21,10 @@ int main() {
     cout << "Encoded message: ";
     myGolay.print_encoded_message();
 
-    // // double p = myGolay.input_probability();
+    // double p = myGolay.input_probability();
 
-    // // cout << "Sending encoded message through a channel..." << endl;
-    // // // myGolay.send_through_channel(p);
+    // cout << "Sending encoded message through a channel..." << endl;
+    // myGolay.send_through_channel(p);
 
     cout << "Received message: ";
     myGolay.print_received();

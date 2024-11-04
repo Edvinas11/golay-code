@@ -138,8 +138,7 @@ void Golay::get_syndrome() {
 
     for (int i = 0; i < 12; ++i) {
         for (int j = 0; j < 24; ++j) {
-            syndrome[i] = bin_add(syndrome[i], bin_mult(f_received[j], H[j][i]));
-            // syndrome[i] ^= f_received[j] * H[j][i];   
+            syndrome[i] = bin_add(syndrome[i], bin_mult(f_received[j], H[j][i])); 
         }
     }
 
@@ -174,83 +173,78 @@ void Golay::form_received() {
 }
 
 void Golay::decode() {
-    int u[24];
+    int u[24] = {0};  // Error vector
     bool decodable = true;
-    int sB[11] = {0};
+    int sB[12] = {0};
 
-    // 1. form w0 or w1, whichever has odd weight
+    // Step 1: Form received vector with parity bit
     form_received();
 
-    // 2. compute syndrome
+    // Step 2: Compute syndrome
     get_syndrome();
 
-    // if w(s) <= 3 then set u = [s, 0]
+    // Step 2: If weight of syndrome <= 3, use it as error pattern [s, 0]
     if (get_weight(syndrome, 12) <= 3) {
-        for (int i = 0; i < 24; ++i) {
-            if (i < 12) {
-                u[i] = syndrome[i];
-            } 
-            else {
-                u[i] = 0;
-            }
+        for (int i = 0; i < 12; ++i) {
+            u[i] = syndrome[i];
+        }
+        for (int i = 12; i < 24; ++i) {
+            u[i] = 0;
         }
     }
-    // if w(s + bi) <= 2 for some row bi of B then u = [s + bi, ei] 
     else {
         bool found = false;
 
+        // Step 3: Check if weight(s + b_i) <= 2 for some row b_i of B
         for (int i = 0; i < 12; ++i) {
             int temp_syndrome[12];
-
             for (int j = 0; j < 12; ++j) {
                 temp_syndrome[j] = bin_add(syndrome[j], B[i][j]);
             }
 
-            if (get_weight(temp_syndrome, 12) >= 2) {
+            if (get_weight(temp_syndrome, 12) <= 2) {
+                // Set u = [s + b_i, e_i]
                 for (int k = 0; k < 12; ++k) {
                     u[k] = temp_syndrome[k];
                 }
                 for (int k = 12; k < 24; ++k) {
                     u[k] = (k - 12 == i) ? 1 : 0;
                 }
-
                 found = true;
                 break;
             }
         }
 
         if (!found) {
-            // compute second syndrome sB
-            for (int i = 0; i < 11; ++i) {
+            // Step 4: Compute second syndrome sB = syndrome * B
+            for (int i = 0; i < 12; ++i) {
+                sB[i] = 0;
                 for (int j = 0; j < 12; ++j) {
-                    sB[i] = bin_add(sB[i], bin_mult(syndrome[j], B[j][i]));
+                    sB[i] ^= (syndrome[j] * B[j][i]);
                 }
             }
 
-            // if sB weight <= 3, set u = [0, sB]
-            if (get_weight(sB, 11) <= 3) {
-                for (int i = 0; i < 13; ++i) {
+            // Step 5: If weight of sB <= 3, use [0, sB] as error pattern
+            if (get_weight(sB, 12) <= 3) {
+                for (int i = 0; i < 12; ++i) {
                     u[i] = 0;
-                }
-                for (int i = 13; i < 24; ++i) {
-                    u[i] = sB[i - 13];
+                    u[i + 12] = sB[i];
                 }
             }
-            // if sB + bi has weight <= 2 for some row bi of B then u = [ei, sB + bi]
             else {
+                // Step 6: Check if weight(sB + b_i) <= 2 for some row b_i of B
                 bool corrected = false;
-                for (int i = 0; i < 11; ++i) {
-                    int temp_syndrome_sB[11];
-                    for (int j = 0; j < 11; ++j) {
-                        temp_syndrome_sB[j] = bin_add(sB[j], B[i][j]);
+                for (int i = 0; i < 12; ++i) {
+                    int temp_sB[12];
+                    for (int j = 0; j < 12; ++j) {
+                        temp_sB[j] = bin_add(sB[j], B[i][j]);
                     }
 
-                    if (get_weight(temp_syndrome_sB, 11) <= 2) {
-                        for (int k = 0; k < 13; ++k) {
+                    if (get_weight(temp_sB, 12) <= 2) {
+                        // Set u = [e_i, sB + b_i]
+                        for (int k = 0; k < 12; ++k) {
                             u[k] = (k == i) ? 1 : 0; // Set u[k] to 1 for error pattern
-                        }
-                        for (int k = 13; k < 24; ++k) {
-                            u[k] = temp_syndrome_sB[k - 13];
+                            u[k + 12] = temp_sB[k];
                         }
                         corrected = true;
                         break;
@@ -258,14 +252,14 @@ void Golay::decode() {
                 }
 
                 if (!corrected) {
-                    decodable = false;
+                    decodable = false;  // Unable to decode
                 }
             }
         }
     }
 
     cout << "Error vector: ";
-    for (int i = 0; i < 12; ++i) {
+    for (int i = 0; i < 24; ++i) {
         cout << u[i] << " ";
     }
     cout << endl;
