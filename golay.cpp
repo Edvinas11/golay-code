@@ -9,7 +9,7 @@ using namespace std;
 // constructor
 Golay::Golay() {
     create_generator_matrix();
-    create_parity_check_matrix();
+    // create_parity_check_matrix();
 }
 
 // creates a 12 x 23 matrix G = [I, B]
@@ -134,10 +134,20 @@ void Golay::get_syndrome() {
     // get syndrome s = received * H
     for (int i = 0; i < 12; ++i) {
         syndrome[i] = 0;
-        for (int j = 0; j < 12; ++j) {
-            syndrome[i] = bin_add(syndrome[i], bin_mult(received[j], H[j][i]));
+    }
+
+    for (int i = 0; i < 12; ++i) {
+        for (int j = 0; j < 24; ++j) {
+            syndrome[i] = bin_add(syndrome[i], bin_mult(f_received[j], H[j][i]));
+            // syndrome[i] ^= f_received[j] * H[j][i];   
         }
     }
+
+    cout << "Syndrome: ";
+    for (int i = 0; i < 12; ++i) {
+        cout << syndrome[i];
+    }
+    cout << endl;
 }
 
 int Golay::get_weight(int *v, int size) {
@@ -166,6 +176,7 @@ void Golay::form_received() {
 void Golay::decode() {
     int u[24];
     bool decodable = true;
+    int sB[11] = {0};
 
     // 1. form w0 or w1, whichever has odd weight
     form_received();
@@ -178,56 +189,101 @@ void Golay::decode() {
         for (int i = 0; i < 24; ++i) {
             if (i < 12) {
                 u[i] = syndrome[i];
-            }
+            } 
             else {
                 u[i] = 0;
             }
         }
-
-        goto result;
     }
     // if w(s + bi) <= 2 for some row bi of B then u = [s + bi, ei] 
     else {
+        bool found = false;
+
         for (int i = 0; i < 12; ++i) {
             int temp_syndrome[12];
+
             for (int j = 0; j < 12; ++j) {
                 temp_syndrome[j] = bin_add(syndrome[j], B[i][j]);
             }
 
-            if (get_weight(temp_syndrome, 12) <= 2) {
-                for (int k = 0; k < 24; ++k) {
-                    if (k < 12) {
-                        u[k] = temp_syndrome[k];
+            if (get_weight(temp_syndrome, 12) >= 2) {
+                for (int k = 0; k < 12; ++k) {
+                    u[k] = temp_syndrome[k];
+                }
+                for (int k = 12; k < 24; ++k) {
+                    u[k] = (k - 12 == i) ? 1 : 0;
+                }
+
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // compute second syndrome sB
+            for (int i = 0; i < 11; ++i) {
+                for (int j = 0; j < 12; ++j) {
+                    sB[i] = bin_add(sB[i], bin_mult(syndrome[j], B[j][i]));
+                }
+            }
+
+            // if sB weight <= 3, set u = [0, sB]
+            if (get_weight(sB, 11) <= 3) {
+                for (int i = 0; i < 13; ++i) {
+                    u[i] = 0;
+                }
+                for (int i = 13; i < 24; ++i) {
+                    u[i] = sB[i - 13];
+                }
+            }
+            // if sB + bi has weight <= 2 for some row bi of B then u = [ei, sB + bi]
+            else {
+                bool corrected = false;
+                for (int i = 0; i < 11; ++i) {
+                    int temp_syndrome_sB[11];
+                    for (int j = 0; j < 11; ++j) {
+                        temp_syndrome_sB[j] = bin_add(sB[j], B[i][j]);
                     }
-                    else {
-                        u[k] = (i == k - 12);
+
+                    if (get_weight(temp_syndrome_sB, 11) <= 2) {
+                        for (int k = 0; k < 13; ++k) {
+                            u[k] = (k == i) ? 1 : 0; // Set u[k] to 1 for error pattern
+                        }
+                        for (int k = 13; k < 24; ++k) {
+                            u[k] = temp_syndrome_sB[k - 13];
+                        }
+                        corrected = true;
+                        break;
                     }
                 }
 
-                goto result;
+                if (!corrected) {
+                    decodable = false;
+                }
             }
         }
     }
 
-    // compute second syndrome sB
-
-    decodable = false;
-
-result:
-    if (decodable) {
-        cout << "Error pattern: ";
-        for (int i = 0; i < 23; ++i) {
-            cout << u[i];
-        }
-
-        cout << endl;
-        cout << "Decoded codeword: ";
-        for (int i = 0; i < 23; ++i) {
-            cout << bin_add(received[i], u[i]);
-        }
-    }
-    else {
-        cout << "ERROR: Message undecodable..."; 
+    cout << "Error vector: ";
+    for (int i = 0; i < 12; ++i) {
+        cout << u[i] << " ";
     }
     cout << endl;
+
+    // Decode if possible
+    if (decodable) {
+        int decoded[23];
+        for (int i = 0; i < 23; ++i) {
+            decoded[i] = bin_add(f_received[i], u[i]);
+        }
+
+        // Output the decoded message
+        cout << "Decoded message: ";
+        for (int i = 0; i < 23; ++i) {
+            cout << decoded[i] << " ";
+        }
+        cout << endl;
+    } else {
+        cout << "ERROR: Message undecodable..." << endl;
+    }
 }
