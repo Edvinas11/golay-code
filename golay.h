@@ -59,8 +59,8 @@ private:
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0}
     };
     int encoded[23] = {0};
-    // int received[23];
-    int received[23] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
+    int received[23];
+    // int received[23] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
     int f_received[24];
     int syndrome[12] = {0};
 
@@ -81,7 +81,8 @@ public:
     void send_through_channel(double p);
     void print_received();
     void decode();
-    double input_probability();
+    void get_message_input(int *message);
+    double get_input_probability();
 };
 
 #endif

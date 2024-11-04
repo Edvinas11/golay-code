@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string>
 
 using namespace std;
 
@@ -74,7 +75,7 @@ void Golay::print_encoded_message() {
     cout << endl;
 }
 
-double Golay::input_probability() {
+double Golay::get_input_probability() {
     double p;
     cout << "Please enter error probability as a floating point number (e.g., 0.0001): ";
 
@@ -82,12 +83,12 @@ double Golay::input_probability() {
         cerr << "ERROR: Invalid input. Please enter a valid floating-point number." << endl;
         cin.clear();
         cin.ignore(10000, '\n');
-        return input_probability();
+        return get_input_probability();
     }
 
     if (p < 0.0 || p > 1.0) {
         cerr << "ERROR: Probability must be between 0 and 1." << endl;
-        return input_probability();
+        return get_input_probability();
     }
 
     return p;
@@ -264,5 +265,37 @@ void Golay::decode() {
         cout << endl;
     } else {
         cout << "ERROR: Message undecodable..." << endl;
+    }
+}
+
+void Golay::get_message_input(int *message) {
+    string input;
+    bool valid = false;
+
+    while (!valid) {
+        cout << "Please enter a 12-bit binary message (e.g., 001001001001): ";
+        cin >> input;
+
+        if (input.length() != 12) {
+            cerr << "Error: Input must be exactly 12 bits long." << endl;
+            continue;
+        }
+
+        // we know for sure input is exactly 12 bits long
+        valid = true;
+
+        for (int i = 0; i < 12; ++i) {
+            if (input[i] == '0') {
+                message[i] = 0;
+            }
+            else if (input[i] == '1') {
+                message[i] = 1;
+            }
+            else {
+                cerr << "ERROR: Input must contain only binary digits (0 or 1)." << endl;
+                valid = false;
+                break;
+            }
+        }
     }
 }

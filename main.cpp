@@ -5,10 +5,9 @@ using namespace std;
 
 int main() {
     Golay myGolay;
+    int message[12];
 
-    // test message for encoding
-    int message[12] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
-
+    myGolay.get_message_input(message);
     cout << "Message: ";
     for (int i = 0; i < 12; ++i) {
         cout << message[i] << " ";
@@ -21,10 +20,9 @@ int main() {
     cout << "Encoded message: ";
     myGolay.print_encoded_message();
 
-    // double p = myGolay.input_probability();
-
-    // cout << "Sending encoded message through a channel..." << endl;
-    // myGolay.send_through_channel(p);
+    double p = myGolay.get_input_probability();
+    cout << "Sending encoded message through a channel..." << endl;
+    myGolay.send_through_channel(p);
 
     cout << "Received message: ";
     myGolay.print_received();
