@@ -77,19 +77,32 @@ void Golay::print_encoded_message() {
 }
 
 double Golay::get_input_probability() {
+    string input;
     double p;
-    cout << "Please enter error probability as a floating point number (e.g., 0.0001): ";
 
-    if (!(cin >> p)) {
-        cerr << "ERROR: Invalid input. Please enter a valid floating-point number." << endl;
-        cin.clear();
-        cin.ignore(10000, '\n');
-        return get_input_probability();
-    }
+    while(true) {
+        cout << "Please enter error probability as a floating point number (between 0 and 1, e.g., 0.0001): ";
+        cin >> input;
 
-    if (p < 0.0 || p > 1.0) {
-        cerr << "ERROR: Probability must be between 0 and 1." << endl;
-        return get_input_probability();
+        // replace ',' with '.'
+        for (char& ch : input) {
+            if (ch == ',') {
+                ch = '.';
+            }
+        }
+
+        try {
+            p = stod(input);
+
+            if (p >= 0.0 && p <= 1.0) {
+                break;
+            } else {
+                cerr << "ERROR: Probability must be between 0 and 1." << endl;
+            }
+        }
+        catch (...) {
+            cerr << "ERROR: Invalid input. Please enter a valid floating-point number." << endl;
+        }
     }
 
     return p;

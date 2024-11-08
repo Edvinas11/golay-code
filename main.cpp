@@ -21,7 +21,7 @@ int main() {
     myGolay.print_encoded_message();
 
     double p = myGolay.get_input_probability();
-    cout << "Sending encoded message through untrusted channel..." << endl;
+    cout << "Sending encoded message through untrusted channel with error probability " << p << "..." << endl;
     myGolay.send_through_channel(p);
 
     cout << "Trying to decode the received message..." << endl;

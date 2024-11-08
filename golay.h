@@ -65,7 +65,6 @@ private:
     int syndrome[12] = {0};
 
     void create_generator_matrix();
-    void create_parity_check_matrix();
     void get_syndrome();
     void form_received();
     int bin_add(int a, int b);
