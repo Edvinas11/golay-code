@@ -173,7 +173,7 @@ int Golay::get_weight(int *v, int size) {
 }
 
 void Golay::form_received() {
-    for (int i = 0; i < 24; ++i) {
+    for (int i = 0; i < 23; ++i) {
         f_received[i] = received[i];
     }
 
@@ -327,4 +327,46 @@ void Golay::get_message_input(int *message) {
             }
         }
     }
+}
+
+void Golay::edit_received_message() {
+    string response;
+    cout << "Do you want to edit the received message? (yes/no): ";
+    cin >> response;
+
+    if (response != "yes") {
+        cout << "Message was not edited." << endl;
+        return;
+    }
+
+    cout << "Edit the received vector by specifying error positions (0-22), separated by spaces. Enter -1 when you are finished:" << endl;
+
+    int pos;
+    vector<int> positions;
+
+    while(true) {
+        cin >> pos;
+
+        if (pos == -1) {
+            break;
+        }
+
+        if (pos >= 0 && pos < 23) {
+            positions.push_back(pos);
+        }
+        else {
+            cout << "Position must be between 0 and 22. Please try again." << endl;
+        }
+    }
+
+    // flipping bits
+    for (int i : positions) {
+        received[i] = 1 - received[i];
+    }
+
+    cout << "Edited message: ";
+    for (int i = 0; i < 23; ++i) {
+        cout << received[i];
+    }
+    cout << endl;
 }
