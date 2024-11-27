@@ -1,8 +1,31 @@
 #include "golay.h"
 #include <iostream>
 #include <fstream>
+#include <bitset>
 
 using namespace std;
+
+void char_to_binary_with_padding(char ch, int binary[12]) {
+    bitset<8> bits(ch); // Convert character to 8-bit binary
+
+    // Fill the first 8 bits of the array with the binary representation of the character
+    for (int i = 0; i < 8; ++i) {
+        binary[i] = bits[7 - i]; // Reverse bitset order for proper binary representation
+    }
+
+    // Add 4 padding bits
+    for (int i = 8; i < 12; ++i) {
+        binary[i] = 0;
+    }
+}
+
+void string_to_message_list(const string& inputText, int messageList[][12], int& messageCount) {
+    messageCount = inputText.length(); // Number of 12-bit messages corresponds to the string length
+
+    for (int i = 0; i < messageCount; ++i) {
+        char_to_binary_with_padding(inputText[i], messageList[i]);
+    }
+}
 
 int main() {
     Golay myGolay;
@@ -41,6 +64,8 @@ int main() {
         myGolay.decode();
     }
     else if (scenarioNr == 2) {
+        int messageList[100][12];
+        int messageCount = 0;
         cout << "Text input selected." << endl;
 
         string filename;
@@ -57,6 +82,17 @@ int main() {
         file.close();
 
         cout << "Original text from file: " << endl << inputText << endl;
+
+        string_to_message_list(inputText, messageList, messageCount);
+
+        cout << "Converted 12-bit messages:" << endl;
+        for (int i = 0; i < messageCount; ++i) {
+            cout << "Message " << i + 1 << ": ";
+            for (int j = 0; j < 12; ++j) {
+                cout << messageList[i][j];
+            }
+            cout << endl;
+        }
     }
 
     return 0;
