@@ -56,6 +56,7 @@ int Golay::bin_mult(int a, int b) {
     return (a * b) % 2;
 }
 
+// encodes a 12-bit message into a 23-bit codeword by matrix multiplication with the generator matrix G
 void Golay::encode(int *message) {
     for (int i = 0; i < 23; ++i) {
         encoded[i] = 0;
@@ -76,6 +77,7 @@ void Golay::print_encoded_message() {
     cout << endl;
 }
 
+// prompts the user to input an error probability for the transmission channel
 double Golay::get_input_probability() {
     string input;
     double p;
@@ -108,6 +110,9 @@ double Golay::get_input_probability() {
     return p;
 }
 
+// Simulates sending the encoded message through a noisy channel, introducing 
+// errors based on the probability p. 
+// Outputs the received message and error details
 void Golay::send_through_channel(double p) {
     srand(time(0));
     int error_count = 0;
@@ -172,6 +177,7 @@ int Golay::get_weight(int *v, int size) {
     return weight;
 }
 
+// forms the 24-bit extended received vector by appending a parity bit to the 23-bit received message
 void Golay::form_received() {
     for (int i = 0; i < 23; ++i) {
         f_received[i] = received[i];
@@ -187,16 +193,17 @@ void Golay::form_received() {
     }
 }
 
+// Attempts to decode the received vector by using error-correction techniques 
+// based on the syndrome and predefined rules. 
+// Outputs the decoded message or an error if the message is undecodable.
 void Golay::decode() {
     int u[24] = {0};  // Error vector
     bool decodable = true;
     int sB[12] = {0};
 
     // Step 1: Form received vector with parity bit
-    cout << "Forming received message with parity bit..." << endl;
     form_received();
 
-    cout << "Received vector with parity: ";
     for (int i = 0; i < 24; ++i) {
         cout << f_received[i];
     }
@@ -207,10 +214,8 @@ void Golay::decode() {
 
     // Step 2: If weight of syndrome <= 3, use it as error pattern [s, 0]
     int syndrome_weight = get_weight(syndrome, 12);
-    cout << "Syndrome weight: " << syndrome_weight << endl;
     
     if (syndrome_weight <= 3) {
-        cout << "Syndrome weight <= 3, using syndrome as error pattern [s, 0]" << endl;
         for (int i = 0; i < 12; ++i) {
             u[i] = syndrome[i];
         }
@@ -222,7 +227,6 @@ void Golay::decode() {
         bool found = false;
 
         // Step 3: Check if weight(s + b_i) <= 2 for some row b_i of B
-        cout << "Checking if weight(s + b_i) <= 2 for any row of B..." << endl;
         for (int i = 0; i < 12; ++i) {
             int temp_syndrome[12];
             for (int j = 0; j < 12; ++j) {
@@ -230,10 +234,8 @@ void Golay::decode() {
             }
 
             int temp_weight = get_weight(temp_syndrome, 12);
-            cout << "Weight of syndrome + B[" << i << "]: " << temp_weight << endl;
 
             if (temp_weight <= 2) {
-                cout << "Found weight <= 2. Using [s + b_i, e_i] as error pattern." << endl;
                 // Set u = [s + b_i, e_i]
                 for (int k = 0; k < 12; ++k) {
                     u[k] = temp_syndrome[k];
@@ -248,15 +250,13 @@ void Golay::decode() {
 
         if (!found) {
             // Step 4: Compute second syndrome sB = syndrome * B
-            cout << "Computing second syndrome sB = syndrome * B..." << endl;
             for (int i = 0; i < 12; ++i) {
                 sB[i] = 0;
                 for (int j = 0; j < 12; ++j) {
-                    sB[i] ^= (syndrome[j] * B[j][i]);
+                    sB[i] = bin_add(sB[i], bin_mult(syndrome[j], B[j][i]));
                 }
             }
 
-            cout << "Second syndrome (sB): ";
             for (int i = 0; i < 12; ++i) {
                 cout << sB[i];
             }
@@ -264,10 +264,8 @@ void Golay::decode() {
 
             // Step 5: If weight of sB <= 3, use [0, sB] as error pattern
             int sB_weight = get_weight(sB, 12);
-            cout << "Weight of sB: " << sB_weight << endl;
             
             if (sB_weight <= 3) {
-                cout << "Weight of sB <= 3, using [0, sB] as error pattern." << endl;
                 for (int i = 0; i < 12; ++i) {
                     u[i] = 0;
                     u[i + 12] = sB[i];
@@ -275,7 +273,6 @@ void Golay::decode() {
             }
             else {
                 // Step 6: Check if weight(sB + b_i) <= 2 for some row b_i of B
-                cout << "Checking if weight(sB + b_i) <= 2 for any row of B..." << endl;
                 bool corrected = false;
                 for (int i = 0; i < 12; ++i) {
                     int temp_sB[12];
@@ -284,10 +281,8 @@ void Golay::decode() {
                     }
 
                     int temp_sB_weight = get_weight(temp_sB, 12);
-                    cout << "Weight of sB + B[" << i << "]: " << temp_sB_weight << endl;
 
                     if (temp_sB_weight <= 2) {
-                        cout << "Found weight <= 2. Using [e_i, sB + b_i] as error pattern." << endl;
                         // Set u = [e_i, sB + b_i]
                         for (int k = 0; k < 12; ++k) {
                             u[k] = (k == i) ? 1 : 0; // Set u[k] to 1 for error pattern
@@ -324,12 +319,12 @@ void Golay::decode() {
         for (int i = 0; i < 23; ++i) {
             cout << decoded[i];
         }
-        cout << endl;
     } else {
         cout << "ERROR: Message undecodable..." << endl;
     }
 }
 
+// prompts the user to input a 12-bit binary message. Validates the input for length and binary format
 void Golay::get_message_input(int *message) {
     string input;
     bool valid = false;
@@ -362,6 +357,8 @@ void Golay::get_message_input(int *message) {
     }
 }
 
+// allows the user to manually edit the received vector by 
+// flipping specific bits at positions they specify. Outputs the updated message
 void Golay::edit_received_message() {
     string response;
     cout << "Do you want to edit the received message? (yes/no): ";
