@@ -19,15 +19,47 @@ void char_to_binary_with_padding(char ch, int binary[12]) {
     }
 }
 
-void string_to_message_list(const string& inputText, int messageList[][12], int& messageCount) {
-    messageCount = inputText.length(); // Number of 12-bit messages corresponds to the string length
+void string_to_message_list(const string& input_text, int message_list[][12], int& message_count) {
+    message_count = input_text.length(); // Number of 12-bit messages corresponds to the string length
 
-    for (int i = 0; i < messageCount; ++i) {
-        char_to_binary_with_padding(inputText[i], messageList[i]);
+    for (int i = 0; i < message_count; ++i) {
+        char_to_binary_with_padding(input_text[i], message_list[i]);
+    }
+}
+
+void process_messages(Golay& golay, int message_list[][12], int message_count, bool protect_last_bits, bool allow_edit, int decoded_messages[][23]) {
+    double p = golay.get_input_probability();
+
+    for (int i = 0; i < message_count; ++i) {
+        cout << "Encoding..." << endl;
+        int* encoded_message = golay.encode(message_list[i]);
+
+        cout << "Encoded message: ";
+        golay.print_encoded_message(encoded_message);
+
+        int received_message[23];
+        cout << "Sending encoded message through untrusted channel with error probability " << p << "..." << endl;
+        golay.send_through_channel(p, encoded_message, received_message, protect_last_bits);
+
+        if (allow_edit) {
+            golay.edit_received_message(received_message);
+        }
+
+        cout << "Trying to decode the received message..." << endl;
+        golay.decode(received_message, decoded_messages[i]);
+
+        cout << "Decoded message: ";
+        for (int j = 0; j < 23; ++j) {
+            cout << decoded_messages[i][j];
+        }
+
+        cout << endl;
     }
 }
 
 int main() {
+    srand(time(0));
+
     Golay myGolay;
     int scenarioNr;
 
@@ -48,20 +80,8 @@ int main() {
         }
         cout << endl;
 
-        cout << "Encoding..." << endl;
-        myGolay.encode(message);
-
-        cout << "Encoded message: ";
-        myGolay.print_encoded_message();
-
-        double p = myGolay.get_input_probability();
-        cout << "Sending encoded message through untrusted channel with error probability " << p << "..." << endl;
-        myGolay.send_through_channel(p);
-
-        myGolay.edit_received_message();
-
-        cout << "Trying to decode the received message..." << endl;
-        myGolay.decode();
+        int decoded_messages[1][23];
+        process_messages(myGolay, &message, 1, false, true, decoded_messages);
     }
     else if (scenarioNr == 2) {
         int messageList[100][12];
@@ -93,6 +113,24 @@ int main() {
             }
             cout << endl;
         }
+
+        int decoded_messages[100][23];
+        process_messages(myGolay, messageList, messageCount, true, false, decoded_messages);
+
+        // reconstruct the decoded text
+        string decoded_text = "";
+        for (int i = 0; i < messageCount; ++i) {
+            char decoded_char = 0;
+            for (int j = 0; j < 8; ++j) { // Convert first 8 bits of each decoded message to a character
+                decoded_char |= (decoded_messages[i][j] << (7 - j));
+            }
+            decoded_text += decoded_char;
+        }
+
+        cout << "Reconstructed text after decoding: " << decoded_text << endl;
+    }
+    else {
+        cout << "Invalid choice. Exiting program." << endl;
     }
 
     return 0;

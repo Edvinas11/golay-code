@@ -58,15 +58,13 @@ private:
         {0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0}
     };
-    int encoded[23] = {0};
-    int received[23];
     // int received[23] = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
     int f_received[24];
     int syndrome[12] = {0};
 
     void create_generator_matrix();
     void get_syndrome();
-    void form_received();
+    void form_received(int* received_message);
     int bin_add(int a, int b);
     int bin_mult(int a, int b);
     int get_weight(int *v, int size);
@@ -75,11 +73,11 @@ public:
     Golay();
     void print_generator_matrix();
     void print_parity_check_matrix();
-    void encode(int *message);
-    void print_encoded_message();
-    void send_through_channel(double p);
-    void edit_received_message();
-    void decode();
+    int* encode(int* message);
+    void print_encoded_message(const int* encoded_message);
+    void send_through_channel(double p, const int* encoded_message, int* received_message, bool protect_last_bits);
+    void edit_received_message(int* received_message);
+    void decode(int* received_message, int* decoded_message);
     void get_message_input(int *message);
     double get_input_probability();
 };

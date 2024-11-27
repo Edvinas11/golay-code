@@ -57,22 +57,25 @@ int Golay::bin_mult(int a, int b) {
 }
 
 // encodes a 12-bit message into a 23-bit codeword by matrix multiplication with the generator matrix G
-void Golay::encode(int *message) {
+int* Golay::encode(int* message) {
+    static int encoded[23]; // Use static array to return the encoded message
+
     for (int i = 0; i < 23; ++i) {
         encoded[i] = 0;
     }
 
-    // encode the message by performing matrix multiplication
     for (int i = 0; i < 23; ++i) {
         for (int j = 0; j < 12; ++j) {
             encoded[i] = bin_add(encoded[i], bin_mult(message[j], G[j][i]));
         }
     }
+
+    return encoded;
 }
 
-void Golay::print_encoded_message() {
-    for(int i = 0; i < 23; ++i) {
-        cout << encoded[i];
+void Golay::print_encoded_message(const int* encoded_message) {
+    for (int i = 0; i < 23; ++i) {
+        cout << encoded_message[i];
     }
     cout << endl;
 }
@@ -113,27 +116,31 @@ double Golay::get_input_probability() {
 // Simulates sending the encoded message through a noisy channel, introducing 
 // errors based on the probability p. 
 // Outputs the received message and error details
-void Golay::send_through_channel(double p) {
-    srand(time(0));
+void Golay::send_through_channel(double p, const int* encoded_message, int* received_message, bool protect_last_bits) {
     int error_count = 0;
     vector<int> error_positions;
 
     for (int i = 0; i < 23; ++i) {
+        if (protect_last_bits && i >= 8 && i <= 11) {
+            received_message[i] = encoded_message[i];
+            continue;
+        }
+
         double a = (double)rand() / RAND_MAX;
 
         if (a < p) {
-            received[i] = 1 - encoded[i];
+            received_message[i] = 1 - encoded_message[i];
             error_positions.push_back(i);
             error_count++;
         }
         else {
-            received[i] = encoded[i];
+            received_message[i] = encoded_message[i];
         }
     }
 
     cout << "Received vector after passing through the channel: ";
     for (int i = 0; i < 23; ++i) {
-        cout << received[i];
+        cout << received_message[i];
     }
     cout << endl;
 
@@ -178,12 +185,12 @@ int Golay::get_weight(int *v, int size) {
 }
 
 // forms the 24-bit extended received vector by appending a parity bit to the 23-bit received message
-void Golay::form_received() {
+void Golay::form_received(int* received_message) {
     for (int i = 0; i < 23; ++i) {
-        f_received[i] = received[i];
+        f_received[i] = received_message[i];
     }
 
-    int weight = get_weight(received, 23);
+    int weight = get_weight(received_message, 23);
 
     if (weight % 2 == 0) {
         f_received[23] = 1;
@@ -196,18 +203,13 @@ void Golay::form_received() {
 // Attempts to decode the received vector by using error-correction techniques 
 // based on the syndrome and predefined rules. 
 // Outputs the decoded message or an error if the message is undecodable.
-void Golay::decode() {
+void Golay::decode(int* received_message, int* decoded_message) {
     int u[24] = {0};  // Error vector
     bool decodable = true;
     int sB[12] = {0};
 
     // Step 1: Form received vector with parity bit
-    form_received();
-
-    for (int i = 0; i < 24; ++i) {
-        cout << f_received[i];
-    }
-    cout << endl;
+    form_received(received_message);
 
     // Step 2: Compute syndrome
     get_syndrome();
@@ -300,27 +302,22 @@ void Golay::decode() {
             }
         }
     }
-
-    cout << "Error vector: ";
-    for (int i = 0; i < 24; ++i) {
-        cout << u[i];
-    }
-    cout << endl;
-
+ 
     // Decode if possible
     if (decodable) {
-        int decoded[23];
         for (int i = 0; i < 23; ++i) {
-            decoded[i] = bin_add(f_received[i], u[i]);
-        }
-
-        // Output the decoded message
-        cout << "Decoded message: ";
-        for (int i = 0; i < 23; ++i) {
-            cout << decoded[i];
+            decoded_message[i] = bin_add(f_received[i], u[i]);
         }
     } else {
         cout << "ERROR: Message undecodable..." << endl;
+        for (int i = 0; i < 23; ++i) {
+            decoded_message[i] = 0;
+        }
+    }
+
+    // clear f_received after decoding
+    for (int i = 0; i < 24; ++i) {
+        f_received[i] = 0;
     }
 }
 
@@ -359,7 +356,7 @@ void Golay::get_message_input(int *message) {
 
 // allows the user to manually edit the received vector by 
 // flipping specific bits at positions they specify. Outputs the updated message
-void Golay::edit_received_message() {
+void Golay::edit_received_message(int* received_message) {
     string response;
     cout << "Do you want to edit the received message? (yes/no): ";
     cin >> response;
@@ -391,12 +388,12 @@ void Golay::edit_received_message() {
 
     // flipping bits
     for (int i : positions) {
-        received[i] = 1 - received[i];
+        received_message[i] = 1 - received_message[i];
     }
 
     cout << "Edited message: ";
     for (int i = 0; i < 23; ++i) {
-        cout << received[i];
+        cout << received_message[i];
     }
     cout << endl;
 }
