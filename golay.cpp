@@ -253,11 +253,6 @@ void Golay::decode(int* received_message, int* decoded_message) {
                 }
             }
 
-            for (int i = 0; i < 12; ++i) {
-                cout << sB[i];
-            }
-            cout << endl;
-
             // Step 5: If weight of sB <= 3, use [0, sB] as error pattern
             int sB_weight = get_weight(sB, 12);
             
