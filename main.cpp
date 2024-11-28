@@ -105,15 +105,6 @@ int main() {
 
         string_to_message_list(inputText, messageList, messageCount);
 
-        cout << "Converted 12-bit messages:" << endl;
-        for (int i = 0; i < messageCount; ++i) {
-            cout << "Message " << i + 1 << ": ";
-            for (int j = 0; j < 12; ++j) {
-                cout << messageList[i][j];
-            }
-            cout << endl;
-        }
-
         int decoded_messages[100][23];
         process_messages(myGolay, messageList, messageCount, true, false, decoded_messages);
 

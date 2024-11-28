@@ -168,12 +168,6 @@ void Golay::get_syndrome() {
             syndrome[i] = bin_add(syndrome[i], bin_mult(f_received[j], H[j][i])); 
         }
     }
-
-    cout << "Syndrome: ";
-    for (int i = 0; i < 12; ++i) {
-        cout << syndrome[i];
-    }
-    cout << endl;
 }
 
 int Golay::get_weight(int *v, int size) {
