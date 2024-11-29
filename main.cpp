@@ -6,9 +6,8 @@
 using namespace std;
 
 void char_to_binary_with_padding(char ch, int binary[12]) {
-    bitset<8> bits(ch); // Convert character to 8-bit binary
+    bitset<8> bits(ch);
 
-    // Fill the first 8 bits of the array with the binary representation of the character
     for (int i = 0; i < 8; ++i) {
         binary[i] = bits[7 - i]; // Reverse bitset order for proper binary representation
     }
@@ -20,7 +19,7 @@ void char_to_binary_with_padding(char ch, int binary[12]) {
 }
 
 void string_to_message_list(const string& input_text, int message_list[][12], int& message_count) {
-    message_count = input_text.length(); // Number of 12-bit messages corresponds to the string length
+    message_count = input_text.length();
 
     for (int i = 0; i < message_count; ++i) {
         char_to_binary_with_padding(input_text[i], message_list[i]);
