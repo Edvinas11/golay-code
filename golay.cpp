@@ -224,7 +224,7 @@ void Golay::decode(int* received_message, int* decoded_message) {
 
         // Step 3: Check if weight(s + b_i) <= 2 for some row b_i of B
         for (int i = 0; i < 12; ++i) {
-            int temp_syndrome[12];
+            int temp_syndrome[12] = {0};
             for (int j = 0; j < 12; ++j) {
                 temp_syndrome[j] = bin_add(syndrome[j], B[i][j]);
             }
@@ -266,7 +266,7 @@ void Golay::decode(int* received_message, int* decoded_message) {
                 // Step 6: Check if weight(sB + b_i) <= 2 for some row b_i of B
                 bool corrected = false;
                 for (int i = 0; i < 12; ++i) {
-                    int temp_sB[12];
+                    int temp_sB[12] = {0};
                     for (int j = 0; j < 12; ++j) {
                         temp_sB[j] = bin_add(sB[j], B[i][j]);
                     }
